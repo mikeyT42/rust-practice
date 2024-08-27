@@ -54,7 +54,7 @@ fn input_loop() -> LoopControl {
     }
 
     let money = match validate(&input) {
-        Ok(SENTINEL) => return LoopControl::STOP,
+        Ok(input_cash) if input_cash == SENTINEL => return LoopControl::STOP,
         Ok(input_cash) => input_cash,
         Err(ValidationError::OutOfRange) => {
             eprintln!(
