@@ -14,9 +14,9 @@ impl From<ParseFloatError> for ValidationError {
 }
 
 struct Sums {
-    positive: u64,
-    negative: i32,
-    overall: i32,
+    positive: f64,
+    negative: f64,
+    overall: f64,
 }
 
 struct Counts {
@@ -88,6 +88,26 @@ fn input_loop() -> LoopControl {
         }
     };
 
+    let mut sums = Sums {
+        positive: 0.0,
+        negative: 0.0,
+        overall: 0.0,
+    };
+    let mut counts = Counts {
+        positive: 0,
+        negative: 0,
+        overall: 0,
+    };
+    let mut averages = Averages {
+        positive: 0.0,
+        negative: 0.0,
+        overall: 0.0,
+    };
+
+    sum_and_count(&numbers, &mut sums, &mut counts);
+    average(&sums, &counts, &mut averages);
+    print_table(&sums, &counts, &averages);
+
     return LoopControl::CONTINUE;
 }
 
@@ -104,4 +124,51 @@ fn validate(input: &str) -> Result<Vec<f64>, ValidationError> {
         .collect::<Result<Vec<f64>, ParseFloatError>>()?;
 
     return Ok(parsed_input_numbers);
+}
+
+// -----------------------------------------------------------------------------
+fn sum_and_count(numbers: &[f64], sums: &mut Sums, counts: &mut Counts) {
+    sums.positive = numbers.iter().filter(|n| **n >= 0.0).sum();
+    sums.negative = numbers.iter().filter(|n| **n < 0.0).sum();
+    sums.overall = numbers.iter().sum();
+
+    counts.positive = numbers.iter().filter(|n| **n >= 0.0).count() as u8;
+    counts.negative = numbers.iter().filter(|n| **n < 0.0).count() as u8;
+    counts.overall = numbers.iter().count() as u8;
+}
+
+// -----------------------------------------------------------------------------
+fn average(sums: &Sums, counts: &Counts, averages: &mut Averages) {
+    if counts.positive != 0 {
+        averages.positive = sums.positive / counts.positive as f64;
+    }
+    if counts.negative != 0 {
+        averages.negative = sums.negative / counts.negative as f64;
+    }
+    if counts.overall != 0 && sums.overall != 0.0 {
+        averages.overall = sums.overall / counts.overall as f64;
+    }
+}
+
+// -----------------------------------------------------------------------------
+fn print_table(sums: &Sums, counts: &Counts, averages: &Averages) {
+    println!(
+        "\nStatistics:\n\
+             {:<18}{:<16}{:<14}\n\
+             Positive:{:<9}{:<16.3}{:<14.3}\n\
+             Negative:{:<9}{:<16.3}{:<14.3}\n\
+             Overall:{:<10}{:<16.3}{:<14.3}\n",
+        "Number:",
+        "Total:",
+        "Average:",
+        counts.positive,
+        sums.positive,
+        averages.positive,
+        counts.negative,
+        sums.negative,
+        averages.negative,
+        counts.overall,
+        sums.overall,
+        averages.overall
+    );
 }
