@@ -20,6 +20,11 @@ enum LoopControl {
     STOP,
 }
 
+struct Point {
+    x: i32,
+    y: i32,
+}
+
 fn main() {
     let mut clear = Command::new("clear");
     let _clear_status = clear.status().expect("Failed to clear the terminal.");
@@ -60,25 +65,29 @@ fn input_loop() -> LoopControl {
         Ok((x, y)) => (x, y),
         Err(ValidationError::Parse(int_parse_err)) => {
             eprintln!(
-                "There was an error parsing your input:: \n\
+                "\nThere was an error parsing your input:: \n\
                 {}",
                 int_parse_err
             );
             return LoopControl::CONTINUE;
-        },
+        }
         Err(ValidationError::TooLittleInputs) => {
-            eprintln!("You have not provided 2 numbers.\n");
+            eprintln!("\nYou have not provided 2 numbers.\n");
             return LoopControl::CONTINUE;
-        },
+        }
         Err(ValidationError::TooManyInputs) => {
-            eprintln!("You have provided more than 2 numbers.\n");
+            eprintln!("\nYou have provided more than 2 numbers.\n");
             return LoopControl::CONTINUE;
-        },
+        }
         Err(ValidationError::NoInput) => {
-            eprintln!("You have provided no input numbers.\n");
+            eprintln!("\nYou have provided no input numbers.\n");
             return LoopControl::CONTINUE;
-        },
+        }
     };
+
+    let point = create_point(x, y);
+    let point_string = to_string(&point);
+    println!("\n{point_string}\n");
 
     return LoopControl::CONTINUE;
 }
@@ -105,4 +114,20 @@ fn validate(input: &str) -> Result<(i32, i32), ValidationError> {
     }
 
     return Ok((all_input_nums[0], all_input_nums[1]));
+}
+
+// -----------------------------------------------------------------------------
+fn create_point(x: i32, y: i32) -> Box<Point> {
+    Box::new(Point { x, y })
+}
+
+// -----------------------------------------------------------------------------
+fn to_string(point: &Box<Point>) -> String {
+    format!(
+        "point {{\n\
+        {:>4}: {},\n\
+        {:>4}: {}\n\
+        }}",
+        "x", point.x, "y", point.y
+    )
 }
